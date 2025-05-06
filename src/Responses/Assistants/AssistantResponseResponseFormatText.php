@@ -9,12 +9,12 @@ use OpenAI\Responses\Concerns\ArrayAccessible;
 use OpenAI\Testing\Responses\Concerns\Fakeable;
 
 /**
- * @implements ResponseContract<array{type: string}>
+ * @implements ResponseContract<array{type: string, json_schema: ?array}>
  */
-final class AssistantResponseResponseFormatText implements ResponseContract
+final class AssistantResponseResponseFormat implements ResponseContract
 {
     /**
-     * @use ArrayAccessible<array{type: string}>
+     * @use ArrayAccessible<array{type: string, json_schema: ?array}>
      */
     use ArrayAccessible;
 
@@ -22,17 +22,19 @@ final class AssistantResponseResponseFormatText implements ResponseContract
 
     private function __construct(
         public string $type,
+        public ?array $json_schema,
     ) {}
 
     /**
      * Acts as static factory, and returns a new Response instance.
      *
-     * @param  array{type: 'text'}  $attributes
+     * @param  array{type: 'text'|'json_object'|'json_schema'}  $attributes
      */
     public static function from(array $attributes): self
     {
         return new self(
             $attributes['type'],
+            $attributes['json_schema'] ?? [],
         );
     }
 
@@ -41,8 +43,9 @@ final class AssistantResponseResponseFormatText implements ResponseContract
      */
     public function toArray(): array
     {
-        return [
+        return array_filter([
             'type' => $this->type,
-        ];
+            'json_schema' => empty($this->json_schema) ? null : $this->json_schema,
+        ]);
     }
 }
